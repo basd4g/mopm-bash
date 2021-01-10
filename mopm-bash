@@ -46,8 +46,9 @@ function verify() {
   fi
   verify_command=$(grep -E "^# mopm-verification: " $definition_file | sed 's/^# mopm-verification: //')
   if ! $verify_command > /dev/null 2>&1; then
-    exit 1
+    echo "false"
   fi
+  echo "true"
 }
 
 function update() {
@@ -85,7 +86,7 @@ function install() {
     error "The package '$package_name' is not found"
   fi
 
-  if verify "$package_name"; then
+  if [ "$(verify "$package_name")" = "true" ]; then
     return
   fi
 
@@ -102,11 +103,18 @@ if [ "$1" = 'lint' ]; then
 elif [ "$1" = 'search' ]; then
   search "$2"
 elif [ "$1" = 'verify' ]; then
-  verify "$2"
+  if [ "$(verify "$2")" = "true" ]; then
+    exit 0
+  fi
+  exit 1
 elif [ "$1" = 'update' ]; then
   update "$2"
 elif [ "$1" = 'show_deps' ]; then
   show_deps "$2"
 elif [ "$1" = 'install' ]; then
+  if [ "$(verify "$2")" = "true" ]; then
+    echo "Already installed!"
+    exit 0
+  fi
   install "$2"
 fi
