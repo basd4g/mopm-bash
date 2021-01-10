@@ -78,6 +78,25 @@ function show_deps() {
   echo -e "$dependencies"
 }
 
+function install() {
+  package_name=$1
+  definition_file="definitions/`arch`/`uname`/$package_name"
+  if ! [ -e "$definition_file" ]; then
+    error "The package '$package_name' is not found"
+  fi
+
+  if verify "$package_name"; then
+    return
+  fi
+
+  show_deps "$package_name" | while read dep_package_name
+  do
+    $(install "$dep_package_name")
+    # bash では変数はすべてグローバルスコープであるから、サブシェルを使って再帰関数による同一名変数の上書きを防ぐ
+  done
+  bash "$definition_file"
+}
+
 if [ "$1" = 'lint' ]; then
   lint "$2"
 elif [ "$1" = 'search' ]; then
@@ -88,4 +107,6 @@ elif [ "$1" = 'update' ]; then
   update "$2"
 elif [ "$1" = 'show_deps' ]; then
   show_deps "$2"
+elif [ "$1" = 'install' ]; then
+  install "$2"
 fi
