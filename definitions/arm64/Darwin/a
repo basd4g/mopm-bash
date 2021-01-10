@@ -1,0 +1,9 @@
+#!/usr/bin/bash
+# mopm-url: https://github.com/basd4g/mopm-bash
+# mopm-description: A installation testing package for mopm-bash
+# mopm-dependencies: b, c, d
+# mopm-verification: find /tmp/mopm-defs-test/a-is-installed
+mkdir -p /tmp/mopm-defs-test
+touch /tmp/mopm-defs-test/a-is-installed
+echo "install pkg a is finished (stdout message test)"
+echo "install pkg a is finished (stderr message test)" 1>&2

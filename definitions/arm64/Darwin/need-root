@@ -1,0 +1,7 @@
+#!/usr/bin/bash
+# mopm-url: https://github.com/basd4g/mopm-bash
+# mopm-description: A installation testing package for mopm-bash. Need root.
+# mopm-dependencies:
+# mopm-verification: find /tmp/mopm-defs-test/need-root-is-installed
+mkdir -p /tmp/mopm-defs-test
+sudo touch /tmp/mopm-defs-test/need-root-is-installed
