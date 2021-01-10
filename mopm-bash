@@ -44,7 +44,7 @@ function verify() {
   if ! [ -e "$definition_file" ]; then
     error "The package '$package_name' is not found"
   fi
-  verify_command=$(grep -E "^# mopm-verification: " $definition_file | sed 's/^# mopm-verification//')
+  verify_command=$(grep -E "^# mopm-verification: " $definition_file | sed 's/^# mopm-verification: //')
   if ! $verify_command > /dev/null 2>&1; then
     exit 1
   fi
@@ -55,25 +55,25 @@ function update() {
   github_repo="mopm-bash"
   mopm_repos_dir="${HOME}/.mopm-bash/repos"
   mopm_repos_user_dir="${mopm_repos_dir}/github.com/${github_user}"
-  mopm_repos_user_repo_dir="{$mopm_repos_user_dir}/${github_repo}"
+  mopm_repos_user_repo_dir="${mopm_repos_user_dir}/${github_repo}"
 
-  if find "${mopm_repos_user_repo_dir}" -type d ; then
+  if [ -e "${mopm_repos_user_repo_dir}" ]; then
     cd "${mopm_repos_user_repo_dir}"
     git pull -f origin master
-    echo "Updated"
   else
     mkdir -p "${mopm_repos_user_dir}"
     cd "${mopm_repos_user_dir}"
     git clone "https://github.com/${github_user}/${github_repo}.git"
   fi
+  echo "Updated"
 }
 
-if [ $1 = 'lint' ]; then
-  lint $2
-elif [ $1 = 'search' ]; then
-  search $2
-elif [ $1 = 'verify' ]; then
-  verify $2
-elif [ $1 = 'update' ]; then
-  update $2
+if [ "$1" = 'lint' ]; then
+  lint "$2"
+elif [ "$1" = 'search' ]; then
+  search "$2"
+elif [ "$1" = 'verify' ]; then
+  verify "$2"
+elif [ "$1" = 'update' ]; then
+  update "$2"
 fi
