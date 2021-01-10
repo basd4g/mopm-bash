@@ -68,6 +68,16 @@ function update() {
   echo "Updated"
 }
 
+function show_deps() {
+  package_name=$1
+  definition_file="definitions/`arch`/`uname`/$package_name"
+  if ! [ -e "$definition_file" ]; then
+    error "The package '$package_name' is not found"
+  fi
+  dependencies=$(grep -E "^# mopm-dependencies: " $definition_file | sed 's/^# mopm-dependencies: //' | sed 's/, /\n/g')
+  echo -e "$dependencies"
+}
+
 if [ "$1" = 'lint' ]; then
   lint "$2"
 elif [ "$1" = 'search' ]; then
@@ -76,4 +86,6 @@ elif [ "$1" = 'verify' ]; then
   verify "$2"
 elif [ "$1" = 'update' ]; then
   update "$2"
+elif [ "$1" = 'show_deps' ]; then
+  show_deps "$2"
 fi
