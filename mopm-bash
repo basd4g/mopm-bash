@@ -104,13 +104,17 @@ function update() {
   echo "Updated"
 }
 
-function dependencies() {
+function package_dependencies() {
   package_name=$1
   definition_file="definitions/`arch`/`uname`/$package_name"
   if ! [ -e "$definition_file" ]; then
     error "The package '$package_name' is not found"
   fi
   grep -E "^# mopm-dependencies: " $definition_file | sed 's/^# mopm-dependencies: //' | sed 's/, /\n/g'
+}
+function dependencies() {
+  package_name="$1"
+  package_dependencies "$package_name"
 }
 
 function not_include() {
@@ -131,7 +135,7 @@ function all-dependencies() {
   stack push "$package_name"
   while [ "`stack is_empty`" = "false" ]; do
     pkg=`stack pop`
-    deps=`dependencies "$pkg"`
+    deps=`package_dependencies "$pkg"`
     if echo -e "$deps" | grep -q -x "$package_name"; then
       # 関数の入り口で指定された package_name の loop は検知できるが、それ以外のループは検知できない
       error "Dependencies is looped"
