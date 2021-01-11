@@ -163,17 +163,12 @@ package_name="$2"
 definition_file="definitions/`arch`/`uname`/$package_name"
 case "$sub_command" in
   "update" )
-      update
-      ;;
-  'lint' \
-  |'search' \
-  |'dependencies' \
-  |'all-dependencies' \
-  |'verify' \
-  |'install' )
-      if ! [ -e "$definition_file" ]; then
-        error "The package '$package_name' is not found"
-      fi
-      "$sub_command" "$package_name"
-      ;;
+    update
+    ;;
+  'lint' | 'search' | 'dependencies' | 'all-dependencies' | 'verify' | 'install' )
+    if ! [ -e "$definition_file" ]; then
+      error "The package '$package_name' is not found"
+    fi
+    "$sub_command" "$package_name"
+    ;;
 esac
