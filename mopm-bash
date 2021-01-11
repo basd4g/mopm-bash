@@ -158,23 +158,22 @@ function install() {
 
 
 
-function main {
-  if [ "$sub_command" = 'update' ] ; then
-    update
-  elif  [ "$sub_command" = 'lint' ] \
-   || [ "$sub_command" = 'search' ] \
-   || [ "$sub_command" = 'dependencies' ] \
-   || [ "$sub_command" = 'all-dependencies' ] \
-   || [ "$sub_command" = 'verify' ] \
-   || [ "$sub_command" = 'install' ]; then
-    if ! [ -e "$definition_file" ]; then
-      error "The package '$package_name' is not found"
-    fi
-    "$sub_command" "$package_name"
-  fi
-}
-
 sub_command="$1"
 package_name="$2"
 definition_file="definitions/`arch`/`uname`/$package_name"
-main "$1" "$2"
+case "$sub_command" in
+  "update" )
+      update
+      ;;
+  'lint' \
+  |'search' \
+  |'dependencies' \
+  |'all-dependencies' \
+  |'verify' \
+  |'install' )
+      if ! [ -e "$definition_file" ]; then
+        error "The package '$package_name' is not found"
+      fi
+      "$sub_command" "$package_name"
+      ;;
+esac
