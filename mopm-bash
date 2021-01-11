@@ -139,6 +139,11 @@ function all-dependencies() {
 }
 
 function install() {
+  if [ "$(verify "$package_name")" = "true" ]; then
+    echo "Already installed!"
+    return
+  fi
+
   defdir="definitions/`arch`/`uname`"
   all-dependencies "$package_name" | while read pkg; do
     deffile="$defdir/$pkg"
@@ -167,14 +172,9 @@ function main {
    || [ "$sub_command" = 'search' ] \
    || [ "$sub_command" = 'dependencies' ] \
    || [ "$sub_command" = 'all-dependencies' ] \
-   || [ "$sub_command" = 'verify' ] ; then
+   || [ "$sub_command" = 'verify' ] \
+   || [ "$sub_command" = 'install' ]; then
     "$sub_command" "$package_name"
-  elif [ "$sub_command" = 'install' ]; then
-    if [ "$(verify "$package_name")" = "true" ]; then
-      echo "Already installed!"
-    else
-      install "$package_name"
-    fi
   fi
 }
 
