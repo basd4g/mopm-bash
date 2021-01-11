@@ -165,18 +165,13 @@ function install() {
 
 
 
-if [ "$1" = 'lint' ]; then
-  lint "$2"
-elif [ "$1" = 'search' ]; then
-  search "$2"
-elif [ "$1" = 'update' ]; then
-  update "$2"
-elif [ "$1" = 'dependencies' ]; then
-  dependencies "$2"
-elif [ "$1" = 'all-dependencies' ]; then
-  all-dependencies "$2"
-elif [ "$1" = 'verify' ]; then
-  verify "$2"
+if  [ "$1" = 'lint' ] \
+ || [ "$1" = 'search' ] \
+ || [ "$1" = 'update' ] \
+ || [ "$1" = 'dependencies' ] \
+ || [ "$1" = 'all-dependencies' ] \
+ || [ "$1" = 'verify' ] ; then
+  "$1" "$2"
 elif [ "$1" = 'install' ]; then
   if [ "$(verify "$2")" = "true" ]; then
     echo "Already installed!"
