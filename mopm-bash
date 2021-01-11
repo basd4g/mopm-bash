@@ -1,4 +1,33 @@
 #!/bin/bash -e
+
+function be_empty() {
+  echo -n > "$1"
+}
+
+# stack
+stack_path="/tmp/stack"
+be_empty "$stack_path"
+function stack {
+  if [ "$1" = "push" ]; then
+    if [ -n "$2" ] ; then # $2 is not empty
+      echo -e "$2" >> "$stack_path"
+    fi
+  elif [ "$1" = "pop" ]; then
+    tail -1 "$stack_path"
+    sed -i -e '$d' "$stack_path"
+  elif [ "$1" = "show" ]; then
+    tail -1 "$stack_path"
+  elif [ "$1" = "is_empty" ]; then
+    if [ -s "$stack_path" ] ; then
+      echo false
+    else
+      echo true
+    fi
+  elif [ "$1" = "length" ]; then
+    cat "$stack_path" | wc -l
+  fi
+}
+
 function error() {
   echo -e "$*" 1>&2
   exit 1
@@ -76,7 +105,48 @@ function show_deps() {
     error "The package '$package_name' is not found"
   fi
   dependencies=$(grep -E "^# mopm-dependencies: " $definition_file | sed 's/^# mopm-dependencies: //' | sed 's/, /\n/g')
-  echo -e "$dependencies"
+  if [ -n "$dependencies" ]; then
+    echo -e "$dependencies"
+  fi
+}
+
+function not_include() {
+  checking_lines="$1"
+  checked_lines_path="$2"
+  echo -e "$checking_lines" | while read checking_line; do
+    if ! grep -q -x "$checking_line" "$checked_lines_path"; then
+      echo "$checking_line"
+    fi
+  done
+}
+
+all_deps_path="/tmp/all_deps"
+be_empty "$all_deps_path"
+function show_all_deps() {
+   package_name=$1
+  stack push "$package_name"
+  while [ "`stack is_empty`" = "false" ]; do
+    pkg=`stack pop`
+    deps=`show_deps "$pkg"`
+    if echo -e "$deps" | grep -q -x "$package_name"; then
+      # 関数の入り口で指定された package_name の loop は検知できるが、それ以外のループは検知できない
+      error "Dependencies is looped"
+    fi
+    deps_not_installing="`not_include "$deps" "$all_deps_path"`"
+    if [ "$deps_not_installing" = "" ]; then
+      echo "$pkg" >> "$all_deps_path"
+    else
+      stack push "$pkg"
+      stack push "$deps_not_installing"
+    fi
+    if [ "`stack length`" -gt "10000" ] ; then
+      error "stack length >= 10000. Dependencies may be looped"
+    fi
+  done
+
+  # 重複のある行は最上位のものだけ取り出す uniqコマンドとは違いソートしなくて良い
+  # 上から順にインストール可能な依存関係になっている
+  awk '!a[$0]++' "$all_deps_path"
 }
 
 function install() {
@@ -109,6 +179,8 @@ elif [ "$1" = 'update' ]; then
   update "$2"
 elif [ "$1" = 'show_deps' ]; then
   show_deps "$2"
+elif [ "$1" = 'show_all_deps' ]; then
+  show_all_deps "$2"
 elif [ "$1" = 'verify' ]; then
   if [ "$(verify "$2")" = "false" ]; then
     exit 1
