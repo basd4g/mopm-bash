@@ -2,7 +2,7 @@
 
 repo="github.com/basd4g/mopm-bash"
 repo_dir="$HOME/.mopm-bash/repos/$repo"
-definitions_dir="$repo_dir/definitions/`arch`/`uname`"
+definitions_dir="$repo_dir/definitions/$(arch)/$(uname)"
 
 sub_command="$1"
 package_name="$2"
@@ -39,7 +39,7 @@ function stack {
         fi
       ;;
     "length" )
-        cat "$stack_path" | wc -l
+        wc -l < "$stack_path"
       ;;
   esac
 }
@@ -55,7 +55,7 @@ function package_verify() {
   if ! [ -e "$def_file" ]; then
     error "The package '$pkg' is not found"
   fi
-  verify_command=$(grep -E "^# mopm-verification: " $def_file | sed 's/^# mopm-verification: //')
+  verify_command=$(grep -E "^# mopm-verification: " "$def_file" | sed 's/^# mopm-verification: //')
   if $verify_command > /dev/null 2>&1; then
     echo "true"
   else
@@ -69,13 +69,13 @@ function package_dependencies() {
   if ! [ -e "$def_file" ]; then
     error "The package '$pkg' is not found"
   fi
-  grep -E "^# mopm-dependencies: " $def_file | sed 's/^# mopm-dependencies: //' | sed 's/, /\n/g'
+  grep -E "^# mopm-dependencies: " "$def_file" | sed 's/^# mopm-dependencies: //' | sed 's/, /\n/g'
 }
 
 function not_include() {
   checking_lines="$1"
   checked_lines_path="$2"
-  echo -e "$checking_lines" | while read checking_line; do
+  echo -e "$checking_lines" | while read -r checking_line; do
     if ! grep -q -x "$checking_line" "$checked_lines_path"; then
       echo "$checking_line"
     fi
@@ -89,29 +89,29 @@ function not_include() {
 function lint() {
   error_message=""
 
-  if ! grep -q -E "^# mopm-url: https?://" $definition_file; then
-    error_message+="The line 'mopm-url' is not found or invalid..\n"
+  if ! grep -q -E "^# mopm-url: https?://" "$definition_file" ; then
+    error_message="The line 'mopm-url' is not found or invalid..\n"
   fi
-  if ! grep -q -E "^# mopm-description: " $definition_file; then
+  if ! grep -q -E "^# mopm-description: " "$definition_file" ; then
     error_message+="The line 'mopm-description' is not found\n"
   fi
-  if ! grep -q -E "^# mopm-dependencies: (([a-z0-9-]+, )*[a-z0-9-]+)?$" $definition_file; then
+  if ! grep -q -E "^# mopm-dependencies: (([a-z0-9-]+, )*[a-z0-9-]+)?$" "$definition_file" ; then
     error_message+="The line 'mopm-dependencies' is not found or invalid..\n"
   fi
-  if ! grep -q -E "^# mopm-verification: " $definition_file; then
+  if ! grep -q -E "^# mopm-verification: " "$definition_file" ; then
     error_message+="The line 'mopm-verification' is not found\n"
   fi
 
   if [ -n "$error_message" ]; then
-    error $error_message
+    error "$error_message"
   fi
 }
 
 function search() {
-  grep -E "^# mopm-url: https?://" $definition_file
-  grep -E "^# mopm-description: " $definition_file
-  grep -E "^# mopm-dependencies: (([a-z0-9-]+, )*[a-z0-9-]+)?$" $definition_file
-  grep -E "^# mopm-verification: " $definition_file
+  grep -E "^# mopm-url: https?://" "$definition_file"
+  grep -E "^# mopm-description: " "$definition_file"
+  grep -E "^# mopm-dependencies: (([a-z0-9-]+, )*[a-z0-9-]+)?$" "$definition_file"
+  grep -E "^# mopm-verification: " "$definition_file"
 }
 
 function verify() {
@@ -137,21 +137,21 @@ function all-dependencies() {
   be_empty "$all_deps_path"
 
   stack push "$package_name"
-  while [ "`stack is_empty`" = "false" ]; do
-    pkg=`stack pop`
-    deps=`package_dependencies "$pkg"`
+  while [ "$(stack is_empty)" = "false" ]; do
+    pkg=$(stack pop)
+    deps=$(package_dependencies "$pkg")
     if echo -e "$deps" | grep -q -x "$package_name"; then
       # 関数の入り口で指定された package_name の loop は検知できるが、それ以外のループは検知できない
       error "Dependencies is looped"
     fi
-    deps_not_installing="`not_include "$deps" "$all_deps_path"`"
+    deps_not_installing="$(not_include "$deps" "$all_deps_path")"
     if [ "$deps_not_installing" = "" ]; then
       echo "$pkg" >> "$all_deps_path"
     else
       stack push "$pkg"
       stack push "$deps_not_installing"
     fi
-    if [ "`stack length`" -gt "10000" ] ; then
+    if [ "$(stack length)" -gt "10000" ] ; then
       error "stack length >= 10000. Dependencies may be looped"
     fi
   done
@@ -166,7 +166,7 @@ function install() {
     return
   fi
 
-  all-dependencies | while read pkg; do
+  all-dependencies | while read -r pkg; do
     if [ "$(package_verify "$pkg")" = "false" ]; then
       bash "$definitions_dir/$pkg"
     fi
