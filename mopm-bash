@@ -99,7 +99,7 @@ function update() {
   echo "Updated"
 }
 
-function show_deps() {
+function dependencies() {
   package_name=$1
   definition_file="definitions/`arch`/`uname`/$package_name"
   if ! [ -e "$definition_file" ]; then
@@ -120,12 +120,12 @@ function not_include() {
 
 all_deps_path="/tmp/all_deps"
 be_empty "$all_deps_path"
-function show_all_deps() {
+function all-dependencies() {
    package_name=$1
   stack push "$package_name"
   while [ "`stack is_empty`" = "false" ]; do
     pkg=`stack pop`
-    deps=`show_deps "$pkg"`
+    deps=`dependencies "$pkg"`
     if echo -e "$deps" | grep -q -x "$package_name"; then
       # 関数の入り口で指定された package_name の loop は検知できるが、それ以外のループは検知できない
       error "Dependencies is looped"
@@ -149,7 +149,7 @@ function show_all_deps() {
 function install() {
   package_name=$1
   defdir="definitions/`arch`/`uname`"
-  show_all_deps "$package_name" | while read pkg; do
+  all-dependencies "$package_name" | while read pkg; do
     deffile="$defdir/$pkg"
     if ! [ -e "$deffile" ]; then
       error "The package '$pkg' is not found"
@@ -170,10 +170,10 @@ elif [ "$1" = 'search' ]; then
   search "$2"
 elif [ "$1" = 'update' ]; then
   update "$2"
-elif [ "$1" = 'show_deps' ]; then
-  show_deps "$2"
-elif [ "$1" = 'show_all_deps' ]; then
-  show_all_deps "$2"
+elif [ "$1" = 'dependencies' ]; then
+  dependencies "$2"
+elif [ "$1" = 'all-dependencies' ]; then
+  all-dependencies "$2"
 elif [ "$1" = 'verify' ]; then
   verify "$2"
 elif [ "$1" = 'install' ]; then
