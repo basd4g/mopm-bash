@@ -43,6 +43,20 @@ function error() {
   exit 1
 }
 
+function package_verify() {
+  pkg=$1
+  def_file="$definitions_dir/$pkg"
+  if ! [ -e "$def_file" ]; then
+    error "The package '$pkg' is not found"
+  fi
+  verify_command=$(grep -E "^# mopm-verification: " $def_file | sed 's/^# mopm-verification: //')
+  if $verify_command > /dev/null 2>&1; then
+    echo "true"
+  else
+    echo "false"
+  fi
+}
+
 function package_dependencies() {
   pkg=$1
   def_file="$definitions_dir/$pkg"
@@ -95,12 +109,7 @@ function search() {
 }
 
 function verify() {
-  verify_command=$(grep -E "^# mopm-verification: " $definition_file | sed 's/^# mopm-verification: //')
-  if $verify_command > /dev/null 2>&1; then
-    echo "true"
-  else
-    echo "false"
-  fi
+  package_verify "$package_name"
 }
 
 function update() {
@@ -154,13 +163,13 @@ function all-dependencies() {
 }
 
 function install() {
-  if [ "$(verify "$package_name")" = "true" ]; then
+  if [ "$(verify)" = "true" ]; then
     echo "Already installed!"
     return
   fi
 
   all-dependencies | while read pkg; do
-    if [ "$(verify "$pkg")" = "false" ]; then
+    if [ "$(package_verify "$pkg")" = "false" ]; then
       bash "$definitions_dir/$pkg"
     fi
   done
@@ -179,6 +188,6 @@ case "$sub_command" in
     if ! [ -e "$definition_file" ]; then
       error "The package '$package_name' is not found"
     fi
-    "$sub_command" "$package_name"
+    "$sub_command"
     ;;
 esac
