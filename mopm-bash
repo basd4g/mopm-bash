@@ -113,19 +113,13 @@ function verify() {
 }
 
 function update() {
-  github_user="basd4g"
-  github_repo="mopm-bash"
-  mopm_repos_dir="${HOME}/.mopm-bash/repos"
-  mopm_repos_user_dir="${mopm_repos_dir}/github.com/${github_user}"
-  mopm_repos_user_repo_dir="${mopm_repos_user_dir}/${github_repo}"
-
-  if [ -e "${mopm_repos_user_repo_dir}" ]; then
-    cd "${mopm_repos_user_repo_dir}"
+  repo_dir="$HOME/.mopm-bash/repos/github.com/basd4g/mopm-bash"
+  repo_url="https://github.com/basd4g/mopm-bash.git"
+  if [ -e "$repo_dir" ]; then
+    cd "$repo_dir"
     git pull -f origin master
   else
-    mkdir -p "${mopm_repos_user_dir}"
-    cd "${mopm_repos_user_dir}"
-    git clone "https://github.com/${github_user}/${github_repo}.git"
+    git clone "$repo_url" "$repo_dir"
   fi
   echo "Updated"
 }
