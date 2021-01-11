@@ -156,7 +156,7 @@ function install() {
     error "The package '$package_name' is not found"
   fi
   defdir="definitions/`arch`/`uname`"
-  show_deps "$package_name" | while read pkg; do
+  show_all_deps "$package_name" | while read pkg; do
     deffile="$defdir/$pkg"
     if ! [ -e "$deffile" ]; then
       error "The package '$pkg' is not found"
