@@ -118,10 +118,11 @@ function not_include() {
   done
 }
 
-all_deps_path="/tmp/all_deps"
-be_empty "$all_deps_path"
 function all-dependencies() {
-   package_name=$1
+  all_deps_path="/tmp/all_deps"
+  be_empty "$all_deps_path"
+
+  package_name=$1
   stack push "$package_name"
   while [ "`stack is_empty`" = "false" ]; do
     pkg=`stack pop`
