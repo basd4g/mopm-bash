@@ -1,6 +1,9 @@
 #!/bin/bash -e
 
 definitions_dir="definitions/`arch`/`uname`"
+sub_command="$1"
+package_name="$2"
+definition_file="$definitions_dir/$package_name"
 
 #===========================================================
 #==================== library functions ====================
@@ -172,9 +175,6 @@ function install() {
 #======================= entry point =======================
 #===========================================================
 
-sub_command="$1"
-package_name="$2"
-definition_file="$definitions_dir/$package_name"
 case "$sub_command" in
   "update" )
     update
