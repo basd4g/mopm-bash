@@ -159,13 +159,9 @@ function install() {
     return
   fi
 
-  all-dependencies "$package_name" | while read pkg; do
-    deffile="$definitions_dir/$pkg"
-    if ! [ -e "$deffile" ]; then
-      error "The package '$pkg' is not found"
-    fi
+  all-dependencies | while read pkg; do
     if [ "$(verify "$pkg")" = "false" ]; then
-      bash "$deffile"
+      bash "$definitions_dir/$pkg"
     fi
   done
 }
