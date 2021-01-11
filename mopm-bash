@@ -161,19 +161,15 @@ function install() {
 function main {
   if [ "$sub_command" = 'update' ] ; then
     update
-    return
-  fi
-
-  if ! [ -e "$definition_file" ]; then
-    error "The package '$package_name' is not found"
-  fi
-
-  if  [ "$sub_command" = 'lint' ] \
+  elif  [ "$sub_command" = 'lint' ] \
    || [ "$sub_command" = 'search' ] \
    || [ "$sub_command" = 'dependencies' ] \
    || [ "$sub_command" = 'all-dependencies' ] \
    || [ "$sub_command" = 'verify' ] \
    || [ "$sub_command" = 'install' ]; then
+    if ! [ -e "$definition_file" ]; then
+      error "The package '$package_name' is not found"
+    fi
     "$sub_command" "$package_name"
   fi
 }
