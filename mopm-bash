@@ -74,10 +74,11 @@ function verify() {
     error "The package '$package_name' is not found"
   fi
   verify_command=$(grep -E "^# mopm-verification: " $definition_file | sed 's/^# mopm-verification: //')
-  if ! $verify_command > /dev/null 2>&1; then
+  if $verify_command > /dev/null 2>&1; then
+    echo "true"
+  else
     echo "false"
   fi
-  echo "true"
 }
 
 function update() {
