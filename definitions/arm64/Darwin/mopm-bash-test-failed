@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+false
+# The package definition file is for testing mopm-bash
