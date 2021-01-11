@@ -85,17 +85,16 @@ function install() {
   if ! [ -e "$definition_file" ]; then
     error "The package '$package_name' is not found"
   fi
-
-  if [ "$(verify "$package_name")" = "true" ]; then
-    return
-  fi
-
-  show_deps "$package_name" | while read dep_package_name
-  do
-    $(install "$dep_package_name")
-    # bash では変数はすべてグローバルスコープであるから、サブシェルを使って再帰関数による同一名変数の上書きを防ぐ
+  defdir="definitions/`arch`/`uname`"
+  show_deps "$package_name" | while read pkg; do
+    deffile="$defdir/$pkg"
+    if ! [ -e "$deffile" ]; then
+      error "The package '$pkg' is not found"
+    fi
+    if ! [ "$(verify "$pkg")" = "true" ]; then
+      bash "$deffile"
+    fi
   done
-  bash "$definition_file"
 }
 
 
