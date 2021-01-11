@@ -34,12 +34,6 @@ function error() {
 }
 
 function lint() {
-  package_name=$1
-  definition_file="definitions/`arch`/`uname`/$package_name"
-  if ! [ -e "$definition_file" ]; then
-    error "The package '$package_name' is not found"
-  fi
-
   error_message=""
 
   if ! grep -q -E "^# mopm-url: https?://" $definition_file; then
@@ -61,11 +55,6 @@ function lint() {
 }
 
 function search() {
-  package_name=$1
-  definition_file="definitions/`arch`/`uname`/$package_name"
-  if ! [ -e "$definition_file" ]; then
-    error "The package '$package_name' is not found"
-  fi
   grep -E "^# mopm-url: https?://" $definition_file
   grep -E "^# mopm-description: " $definition_file
   grep -E "^# mopm-dependencies: (([a-z0-9-]+, )*[a-z0-9-]+)?$" $definition_file
@@ -73,11 +62,6 @@ function search() {
 }
 
 function verify() {
-  package_name=$1
-  definition_file="definitions/`arch`/`uname`/$package_name"
-  if ! [ -e "$definition_file" ]; then
-    error "The package '$package_name' is not found"
-  fi
   verify_command=$(grep -E "^# mopm-verification: " $definition_file | sed 's/^# mopm-verification: //')
   if $verify_command > /dev/null 2>&1; then
     echo "true"
@@ -113,7 +97,6 @@ function package_dependencies() {
   grep -E "^# mopm-dependencies: " $definition_file | sed 's/^# mopm-dependencies: //' | sed 's/, /\n/g'
 }
 function dependencies() {
-  package_name="$1"
   package_dependencies "$package_name"
 }
 
@@ -131,7 +114,6 @@ function all-dependencies() {
   all_deps_path="/tmp/all_deps"
   be_empty "$all_deps_path"
 
-  package_name=$1
   stack push "$package_name"
   while [ "`stack is_empty`" = "false" ]; do
     pkg=`stack pop`
@@ -157,7 +139,6 @@ function all-dependencies() {
 }
 
 function install() {
-  package_name=$1
   defdir="definitions/`arch`/`uname`"
   all-dependencies "$package_name" | while read pkg; do
     deffile="$defdir/$pkg"
@@ -172,19 +153,32 @@ function install() {
 
 
 
-
-
-if  [ "$1" = 'lint' ] \
- || [ "$1" = 'search' ] \
- || [ "$1" = 'update' ] \
- || [ "$1" = 'dependencies' ] \
- || [ "$1" = 'all-dependencies' ] \
- || [ "$1" = 'verify' ] ; then
-  "$1" "$2"
-elif [ "$1" = 'install' ]; then
-  if [ "$(verify "$2")" = "true" ]; then
-    echo "Already installed!"
-  else
-    install "$2"
+function main {
+  if [ "$sub_command" = 'update' ] ; then
+    update
+    return
   fi
-fi
+
+  if ! [ -e "$definition_file" ]; then
+    error "The package '$package_name' is not found"
+  fi
+
+  if  [ "$sub_command" = 'lint' ] \
+   || [ "$sub_command" = 'search' ] \
+   || [ "$sub_command" = 'dependencies' ] \
+   || [ "$sub_command" = 'all-dependencies' ] \
+   || [ "$sub_command" = 'verify' ] ; then
+    "$sub_command" "$package_name"
+  elif [ "$sub_command" = 'install' ]; then
+    if [ "$(verify "$package_name")" = "true" ]; then
+      echo "Already installed!"
+    else
+      install "$package_name"
+    fi
+  fi
+}
+
+sub_command="$1"
+package_name="$2"
+definition_file="definitions/`arch`/`uname`/$package_name"
+main "$1" "$2"
