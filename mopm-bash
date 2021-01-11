@@ -188,4 +188,20 @@ case "$sub_command" in
       fi
       "$sub_command"
     ;;
+  * )
+      cat - << 'EOF'
+mopm-bash is a package manager on bash.
+usage: mopm-bash <command> [<args>]
+
+These are common mopm-bash commands:
+  update             Download latest package definitions.
+  lint               Check syntax of the package definition.
+  search             Search and show packages.
+  dependencies       Show package dependencies.
+  all-dependencies   Show package all dependencies.
+  verify             Check the package is installed or not.
+  install            Install the package.
+  help               Show this help.
+EOF
+    ;;
 esac
