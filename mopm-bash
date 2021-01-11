@@ -1,6 +1,9 @@
 #!/bin/bash -e
 
-definitions_dir="definitions/`arch`/`uname`"
+repo="github.com/basd4g/mopm-bash"
+repo_dir="$HOME/.mopm-bash/repos/$repo"
+definitions_dir="$repo_dir/definitions/`arch`/`uname`"
+
 sub_command="$1"
 package_name="$2"
 definition_file="$definitions_dir/$package_name"
@@ -113,8 +116,7 @@ function verify() {
 }
 
 function update() {
-  repo_dir="$HOME/.mopm-bash/repos/github.com/basd4g/mopm-bash"
-  repo_url="https://github.com/basd4g/mopm-bash.git"
+  repo_url="https://$repo.git"
   if [ -e "$repo_dir" ]; then
     cd "$repo_dir"
     git pull -f origin master
