@@ -34,19 +34,24 @@ function error() {
 }
 
 function lint() {
-  error_message=""
-  target_file=$1
+  package_name=$1
+  definition_file="definitions/`arch`/`uname`/$package_name"
+  if ! [ -e "$definition_file" ]; then
+    error "The package '$package_name' is not found"
+  fi
 
-  if ! grep -q -E "^# mopm-url: https?://" $target_file; then
+  error_message=""
+
+  if ! grep -q -E "^# mopm-url: https?://" $definition_file; then
     error_message+="The line 'mopm-url' is not found or invalid..\n"
   fi
-  if ! grep -q -E "^# mopm-description: " $target_file; then
+  if ! grep -q -E "^# mopm-description: " $definition_file; then
     error_message+="The line 'mopm-description' is not found\n"
   fi
-  if ! grep -q -E "^# mopm-dependencies: (([a-z0-9-]+, )*[a-z0-9-]+)?$" $target_file; then
+  if ! grep -q -E "^# mopm-dependencies: (([a-z0-9-]+, )*[a-z0-9-]+)?$" $definition_file; then
     error_message+="The line 'mopm-dependencies' is not found or invalid..\n"
   fi
-  if ! grep -q -E "^# mopm-verification: " $target_file; then
+  if ! grep -q -E "^# mopm-verification: " $definition_file; then
     error_message+="The line 'mopm-verification' is not found\n"
   fi
 
