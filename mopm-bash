@@ -180,12 +180,12 @@ function install() {
 
 case "$sub_command" in
   "update" )
-    update
+      update
     ;;
   'lint' | 'search' | 'dependencies' | 'all-dependencies' | 'verify' | 'install' )
-    if ! [ -e "$definition_file" ]; then
-      error "The package '$package_name' is not found"
-    fi
-    "$sub_command"
+      if ! [ -e "$definition_file" ]; then
+        error "The package '$package_name' is not found"
+      fi
+      "$sub_command"
     ;;
 esac
