@@ -145,9 +145,8 @@ function show_all_deps() {
     fi
   done
 
-  # 重複のある行は最上位のものだけ取り出す uniqコマンドとは違いソートしなくて良い
   # 上から順にインストール可能な依存関係になっている
-  awk '!a[$0]++' "$all_deps_path"
+  cat "$all_deps_path"
 }
 
 function install() {
