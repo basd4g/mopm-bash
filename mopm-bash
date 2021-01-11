@@ -148,17 +148,13 @@ function show_all_deps() {
 
 function install() {
   package_name=$1
-  definition_file="definitions/`arch`/`uname`/$package_name"
-  if ! [ -e "$definition_file" ]; then
-    error "The package '$package_name' is not found"
-  fi
   defdir="definitions/`arch`/`uname`"
   show_all_deps "$package_name" | while read pkg; do
     deffile="$defdir/$pkg"
     if ! [ -e "$deffile" ]; then
       error "The package '$pkg' is not found"
     fi
-    if ! [ "$(verify "$pkg")" = "true" ]; then
+    if [ "$(verify "$pkg")" = "false" ]; then
       bash "$deffile"
     fi
   done
@@ -179,9 +175,7 @@ elif [ "$1" = 'show_deps' ]; then
 elif [ "$1" = 'show_all_deps' ]; then
   show_all_deps "$2"
 elif [ "$1" = 'verify' ]; then
-  if [ "$(verify "$2")" = "false" ]; then
-    exit 1
-  fi
+  verify "$2"
 elif [ "$1" = 'install' ]; then
   if [ "$(verify "$2")" = "true" ]; then
     echo "Already installed!"
