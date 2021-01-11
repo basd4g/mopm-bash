@@ -21,24 +21,27 @@ function be_empty() {
 stack_path="/tmp/stack"
 be_empty "$stack_path"
 function stack {
-  if [ "$1" = "push" ]; then
-    if [ -n "$2" ] ; then # $2 is not empty
-      echo -e "$2" >> "$stack_path"
-    fi
-  elif [ "$1" = "pop" ]; then
-    tail -1 "$stack_path"
-    sed -i -e '$d' "$stack_path"
-  elif [ "$1" = "show" ]; then
-    tail -1 "$stack_path"
-  elif [ "$1" = "is_empty" ]; then
-    if [ -s "$stack_path" ] ; then
-      echo false
-    else
-      echo true
-    fi
-  elif [ "$1" = "length" ]; then
-    cat "$stack_path" | wc -l
-  fi
+  case "$1" in
+    "push" )
+        if [ -n "$2" ] ; then # $2 is not empty
+          echo -e "$2" >> "$stack_path"
+        fi
+      ;;
+    "pop" )
+        tail -1 "$stack_path"
+        sed -i -e '$d' "$stack_path"
+      ;;
+    "is_empty" )
+        if [ -s "$stack_path" ] ; then
+          echo false
+        else
+          echo true
+        fi
+      ;;
+    "length" )
+        cat "$stack_path" | wc -l
+      ;;
+  esac
 }
 
 function error() {
