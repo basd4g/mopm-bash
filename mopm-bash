@@ -33,6 +33,25 @@ function error() {
   exit 1
 }
 
+function package_dependencies() {
+  pkg_name=$1
+  def_file="definitions/`arch`/`uname`/$pkg_name"
+  if ! [ -e "$def_file" ]; then
+    error "The package '$pkg_name' is not found"
+  fi
+  grep -E "^# mopm-dependencies: " $def_file | sed 's/^# mopm-dependencies: //' | sed 's/, /\n/g'
+}
+
+function not_include() {
+  checking_lines="$1"
+  checked_lines_path="$2"
+  echo -e "$checking_lines" | while read checking_line; do
+    if ! grep -q -x "$checking_line" "$checked_lines_path"; then
+      echo "$checking_line"
+    fi
+  done
+}
+
 function lint() {
   error_message=""
 
@@ -88,26 +107,8 @@ function update() {
   echo "Updated"
 }
 
-function package_dependencies() {
-  package_name=$1
-  definition_file="definitions/`arch`/`uname`/$package_name"
-  if ! [ -e "$definition_file" ]; then
-    error "The package '$package_name' is not found"
-  fi
-  grep -E "^# mopm-dependencies: " $definition_file | sed 's/^# mopm-dependencies: //' | sed 's/, /\n/g'
-}
 function dependencies() {
   package_dependencies "$package_name"
-}
-
-function not_include() {
-  checking_lines="$1"
-  checked_lines_path="$2"
-  echo -e "$checking_lines" | while read checking_line; do
-    if ! grep -q -x "$checking_line" "$checked_lines_path"; then
-      echo "$checking_line"
-    fi
-  done
 }
 
 function all-dependencies() {
