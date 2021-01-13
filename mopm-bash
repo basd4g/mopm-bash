@@ -1,12 +1,10 @@
 #!/bin/bash -e
 
 repo="github.com/basd4g/mopm-bash"
-repo_dir="$HOME/.mopm-bash/repos/$repo"
-definitions_dir="$repo_dir/definitions/$(arch)/$(uname)"
+repos_dir="$HOME/.mopm-bash/repos"
 
 sub_command="$1"
 package_name="$2"
-definition_file="$definitions_dir/$package_name"
 
 #===========================================================
 #==================== library functions ====================
@@ -51,6 +49,7 @@ function error() {
 
 function package_file() {
   pkg=$1
+  definitions_dir="$repos_dir/$repo/definitions/$(arch)/$(uname)"
   def_file="$definitions_dir/$pkg"
   if ! [ -e "$def_file" ]; then
     echo "The package '$pkg' is not found" 1>&2
@@ -62,6 +61,9 @@ function package_file() {
 function package_verify() {
   pkg=$1
   def_file="$(package_file "$pkg")"
+  if ! [ -e "$def_file" ]; then
+    exit 1
+  fi
   verify_command=$(grep -E "^# mopm-verification: " "$def_file" | sed 's/^# mopm-verification: //')
   if $verify_command > /dev/null 2>&1; then
     echo "true"
@@ -73,6 +75,9 @@ function package_verify() {
 function package_dependencies() {
   pkg=$1
   def_file="$(package_file "$pkg")"
+  if ! [ -e "$def_file" ]; then
+    exit 1
+  fi
   grep -E "^# mopm-dependencies: " "$def_file" | sed 's/^# mopm-dependencies: //' | sed 's/, /\n/g'
 }
 
@@ -92,17 +97,21 @@ function not_include() {
 
 function lint() {
   error_message=""
+  def_file="$(package_file "$package_name")"
+  if ! [ -e "$def_file" ]; then
+    exit 1
+  fi
 
-  if ! grep -q -E "^# mopm-url: https?://" "$definition_file" ; then
+  if ! grep -q -E "^# mopm-url: https?://" "$def_file" ; then
     error_message="The line 'mopm-url' is not found or invalid..\n"
   fi
-  if ! grep -q -E "^# mopm-description: " "$definition_file" ; then
+  if ! grep -q -E "^# mopm-description: " "$def_file" ; then
     error_message+="The line 'mopm-description' is not found\n"
   fi
-  if ! grep -q -E "^# mopm-dependencies: (([a-z0-9-]+, )*[a-z0-9-]+)?$" "$definition_file" ; then
+  if ! grep -q -E "^# mopm-dependencies: (([a-z0-9-]+, )*[a-z0-9-]+)?$" "$def_file" ; then
     error_message+="The line 'mopm-dependencies' is not found or invalid..\n"
   fi
-  if ! grep -q -E "^# mopm-verification: " "$definition_file" ; then
+  if ! grep -q -E "^# mopm-verification: " "$def_file" ; then
     error_message+="The line 'mopm-verification' is not found\n"
   fi
 
@@ -112,10 +121,14 @@ function lint() {
 }
 
 function search() {
-  grep -E "^# mopm-url: https?://" "$definition_file"
-  grep -E "^# mopm-description: " "$definition_file"
-  grep -E "^# mopm-dependencies: (([a-z0-9-]+, )*[a-z0-9-]+)?$" "$definition_file"
-  grep -E "^# mopm-verification: " "$definition_file"
+  def_file="$(package_file "$package_name")"
+  if ! [ -e "$def_file" ]; then
+    exit 1
+  fi
+  grep -E "^# mopm-url: https?://" "$def_file"
+  grep -E "^# mopm-description: " "$def_file"
+  grep -E "^# mopm-dependencies: (([a-z0-9-]+, )*[a-z0-9-]+)?$" "$def_file"
+  grep -E "^# mopm-verification: " "$def_file"
 }
 
 function verify() {
@@ -123,11 +136,11 @@ function verify() {
 }
 
 function update() {
-  if [ -e "$repo_dir" ]; then
-    cd "$repo_dir"
+  if [ -e "$repos_dir/$repo" ]; then
+    cd "$repos_dir/$repo"
     git pull -f origin master
   else
-    git clone "https://$repo.git" "$repo_dir"
+    git clone "https://$repo.git" "$repos_dir/$repo"
   fi
   echo "Updated"
 }
@@ -138,12 +151,14 @@ function dependencies() {
 
 function all-dependencies() {
   all_deps_path="/tmp/mopm-bash-all-dependencies"
+  deps_path="/tmp/mopm-bash-dependencies"
   be_empty "$all_deps_path"
 
   stack push "$package_name"
   while [ "$(stack is_empty)" = "false" ]; do
     pkg=$(stack pop)
-    deps=$(package_dependencies "$pkg")
+    package_dependencies "$pkg" > "$deps_path"
+    deps=$(cat "$deps_path")
     if echo -e "$deps" | grep -q -x "$package_name"; then
       # 関数の入り口で指定された package_name の loop は検知できるが、それ以外のループは検知できない
       error "Dependencies is looped"
@@ -165,7 +180,10 @@ function all-dependencies() {
 }
 
 function install() {
-  if [ "$(verify)" = "true" ]; then
+  vrf="$(verify)"
+  if [ -z "$vrf" ]; then
+    exit 1
+  elif [ "$vrf" = "true" ]; then
     echo "Already installed!"
     return
   fi
@@ -187,9 +205,6 @@ case "$sub_command" in
       update
     ;;
   'lint' | 'search' | 'dependencies' | 'all-dependencies' | 'verify' | 'install' )
-      if ! [ -e "$definition_file" ]; then
-        error "The package '$package_name' is not found"
-      fi
       "$sub_command"
     ;;
   * )
