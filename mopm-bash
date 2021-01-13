@@ -63,8 +63,7 @@ function package_file() {
     return 0
   fi
 
-  echo "The package '$pkg' is not found" 1>&2
-  exit 1
+  error "The package '$pkg' is not found"
 }
 
 function package_verify() {
