@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 # mopm-url: https://github.com/basd4g/mopm-bash
 # mopm-description: A installation testing package for mopm-bash
-# mopm-dependencies:
+# mopm-dependencies: 
 # mopm-verification: find /tmp/mopm-defs-test/g-is-installed
 mkdir -p /tmp/mopm-defs-test
 touch /tmp/mopm-defs-test/g-is-installed
