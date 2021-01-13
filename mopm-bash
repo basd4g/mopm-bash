@@ -49,12 +49,19 @@ function error() {
   exit 1
 }
 
-function package_verify() {
+function package_file() {
   pkg=$1
   def_file="$definitions_dir/$pkg"
   if ! [ -e "$def_file" ]; then
-    error "The package '$pkg' is not found"
+    echo "The package '$pkg' is not found" 1>&2
+    exit 1
   fi
+  echo "$def_file"
+}
+
+function package_verify() {
+  pkg=$1
+  def_file="$(package_file "$pkg")"
   verify_command=$(grep -E "^# mopm-verification: " "$def_file" | sed 's/^# mopm-verification: //')
   if $verify_command > /dev/null 2>&1; then
     echo "true"
@@ -65,10 +72,7 @@ function package_verify() {
 
 function package_dependencies() {
   pkg=$1
-  def_file="$definitions_dir/$pkg"
-  if ! [ -e "$def_file" ]; then
-    error "The package '$pkg' is not found"
-  fi
+  def_file="$(package_file "$pkg")"
   grep -E "^# mopm-dependencies: " "$def_file" | sed 's/^# mopm-dependencies: //' | sed 's/, /\n/g'
 }
 
@@ -168,7 +172,7 @@ function install() {
 
   all-dependencies | while read -r pkg; do
     if [ "$(package_verify "$pkg")" = "false" ]; then
-      bash "$definitions_dir/$pkg"
+      bash "$(package_file "$pkg")"
     fi
   done
 }
