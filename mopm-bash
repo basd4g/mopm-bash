@@ -47,15 +47,24 @@ function error() {
   exit 1
 }
 
+arch_uname="$(arch)/$(uname)"
 function package_file() {
   pkg=$1
-  definitions_dir="$repos_dir/$repo/definitions/$(arch)/$(uname)"
-  def_file="$definitions_dir/$pkg"
-  if ! [ -e "$def_file" ]; then
-    echo "The package '$pkg' is not found" 1>&2
-    exit 1
+
+  def_file="$repos_dir/$repo/definitions/$arch_uname/$pkg"
+  if [ -e "$def_file" ]; then
+    echo "$def_file"
+    return 0
   fi
-  echo "$def_file"
+
+  def_file="$repos_dir/$repo/definitions/common/$pkg"
+  if [ -e "$def_file" ]; then
+    echo "$def_file"
+    return 0
+  fi
+
+  echo "The package '$pkg' is not found" 1>&2
+  exit 1
 }
 
 function package_verify() {

@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+# The file is invalid by 'mopm-bash lint' but always not be loaded
+false

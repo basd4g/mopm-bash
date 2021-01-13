@@ -18,6 +18,7 @@ find ~/.mopm-bash/repos/github.com/basd4g/mopm-bash/test.sh
 echo "TEST: mopm-bash lint"
 
 test -z "`./mopm-bash lint mopm-bash-test-a`" # 'a' will be passed (put nothing)
+test -z "`./mopm-bash lint mopm-bash-test-common`" # 'a' will be passed (put nothing)
 
 diff - <(./mopm-bash lint mopm-bash-test-failed 2>&1 ) << 'EOF'
 The line 'mopm-url' is not found or invalid..
