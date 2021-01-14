@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 # mopm-url: https://rust-lang.org
 # mopm-description: Rust language
-# mopm-dependencies: curl
+# mopm-dependencies: 
 # mopm-verification: which cargo
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
