@@ -1,0 +1,12 @@
+#!/usr/bin/bash
+# mopm-url: https://www.colordiff.org
+# mopm-description: colordiff
+# mopm-dependencies: 
+# mopm-verification: which colordiff
+rm -rf /tmp/mopm-bash-colordiff
+mkdir -p /tmp/mopm-bash-colordiff
+curl https://www.colordiff.org/colordiff-latest.tar.gz --output /tmp/mopm-bash-colordiff/colordiff-latest.tar.gz
+cd /tmp/mopm-bash-colordiff
+tar xzf colordiff-latest.tar.gz
+cd $(find . -type d | grep colordiff)
+sudo make install
